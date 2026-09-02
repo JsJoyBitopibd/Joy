@@ -64,6 +64,23 @@
     .petal { animation: none; opacity: .3; }
   }
   .stage { position: relative; z-index: 2; }
+
+  /* taunt shown while the Not now button is being chased */
+  #taunt {
+    position: fixed;
+    z-index: 11;
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: #d62828;
+    color: #fff;
+    font-size: 14px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity .25s ease, transform .25s ease, left .18s ease, top .18s ease;
+  }
+  #taunt.show { opacity: 1; transform: translateY(0); }
   .stage { width: 100%; max-width: 560px; text-align: center; }
   .envelope {
     background: var(--card);
@@ -180,6 +197,8 @@
 <body>
   <div id="petals" aria-hidden="true"></div>
 
+  <div id="taunt">Try harder, but you won't be able to touch me 😜</div>
+
   <main class="stage">
     <section class="envelope" id="prompt">
       <div class="seal">💌</div>
@@ -187,7 +206,7 @@
       <p class="sub">Want to read?</p>
       <div class="row">
         <button id="yes">Yes, open it</button>
-        <button id="no" class="ghost">NOT NOW: Try harder, but you won't be able to touch me</button>
+        <button id="no" class="ghost">Not now</button>
       </div>
     </section>
 
@@ -261,6 +280,8 @@
     document.getElementById('sig').textContent = data.signature;
     prompt.style.display = 'none';
     no.remove();
+    taunt.remove();
+    clearTimeout(tauntTimer);
     letter.classList.add('show');
   });
 
@@ -268,13 +289,30 @@
   const SAFE = 120;   // how close the pointer may get, in px
   const MARGIN = 16;  // keep the button on screen
 
+  const taunt = document.getElementById('taunt');
+  let tauntTimer;
+
   function place(x, y) {
     const w = no.offsetWidth, h = no.offsetHeight;
-    no.style.left = Math.min(Math.max(x, MARGIN), innerWidth - w - MARGIN) + 'px';
-    no.style.top = Math.min(Math.max(y, MARGIN), innerHeight - h - MARGIN) + 'px';
+    const left = Math.min(Math.max(x, MARGIN), innerWidth - w - MARGIN);
+    const top = Math.min(Math.max(y, MARGIN), innerHeight - h - MARGIN);
+    no.style.left = left + 'px';
+    no.style.top = top + 'px';
+    // keep the taunt pinned above (or below) the button
+    const tw = taunt.offsetWidth, th = taunt.offsetHeight;
+    taunt.style.left = Math.min(Math.max(left + w / 2 - tw / 2, MARGIN), innerWidth - tw - MARGIN) + 'px';
+    taunt.style.top = (top - th - 10 > MARGIN ? top - th - 10 : top + h + 10) + 'px';
+  }
+
+  function showTaunt() {
+    taunt.classList.add('show');
+    clearTimeout(tauntTimer);
+    // disappears after 5s of inactivity
+    tauntTimer = setTimeout(() => taunt.classList.remove('show'), 5000);
   }
 
   function flee(px, py) {
+    showTaunt();
     const w = no.offsetWidth, h = no.offsetHeight;
     for (let i = 0; i < 40; i++) {
       const x = MARGIN + Math.random() * (innerWidth - w - MARGIN * 2);
