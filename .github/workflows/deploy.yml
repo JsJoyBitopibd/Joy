@@ -21,4 +21,11 @@ jobs:
             git reset --hard origin/main1
             npm ci --omit=dev
             pm2 restart joy
-            curl -sf http://localhost:3000 > /dev/null
+            # give the app a moment to bind the port, then health-check
+            for i in 1 2 3 4 5; do
+              sleep 2
+              curl -sf http://localhost:3000 > /dev/null && exit 0
+            done
+            echo "app did not respond on :3000" >&2
+            pm2 logs joy --lines 20 --nostream
+            exit 1
