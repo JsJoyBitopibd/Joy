@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>A message for you</title>
+<style>
+  :root {
+    --bg: #fdeef2;
+    --bg2: #f7dfe9;
+    --ink: #3a2530;
+    --muted: #8d6b7a;
+    --card: #fffafc;
+    --accent: #d6436e;
+    --line: #f2d3de;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1d1119;
+      --bg2: #2a1622;
+      --ink: #f3e3ea;
+      --muted: #b6929f;
+      --card: #2a1a23;
+      --accent: #ff7aa2;
+      --line: #472936;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background:
+      radial-gradient(1200px 600px at 15% 0%, var(--bg2), transparent 60%),
+      radial-gradient(1000px 700px at 90% 100%, var(--bg2), transparent 60%),
+      var(--bg);
+    color: var(--ink);
+    font: 16px/1.6 ui-serif, Georgia, "Times New Roman", serif;
+    overflow: hidden;
+  }
+
+  /* Drifting flowers, hearts and kisses behind everything. */
+  #petals {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .petal {
+    position: absolute;
+    top: -10vh;
+    will-change: transform;
+    animation: fall linear infinite;
+    opacity: .75;
+  }
+  @keyframes fall {
+    0%   { transform: translate3d(0, -10vh, 0) rotate(0deg); }
+    100% { transform: translate3d(var(--drift, 40px), 115vh, 0) rotate(var(--spin, 360deg)); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .petal { animation: none; opacity: .3; }
+  }
+  .stage { position: relative; z-index: 2; }
+  .stage { width: 100%; max-width: 560px; text-align: center; }
+  .envelope {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 48px 32px;
+    box-shadow: 0 18px 40px -24px rgba(0,0,0,.45);
+  }
+  .seal {
+    width: 56px; height: 56px; margin: 0 auto 24px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    background: var(--accent);
+    color: #fff; font-size: 24px;
+  }
+  h1 { margin: 0 0 8px; font-size: 26px; font-weight: 600; line-height: 1.3; }
+  .sub { margin: 0 0 28px; color: var(--muted); font-size: 15px; }
+  button {
+    font: inherit; font-size: 15px;
+    padding: 12px 26px;
+    border: none; border-radius: 999px;
+    background: var(--accent); color: #fff;
+    cursor: pointer;
+    transition: transform .15s ease, opacity .15s ease;
+  }
+  button:hover { transform: translateY(-1px); opacity: .92; }
+  button.ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+  #no {
+    position: fixed;
+    z-index: 10;
+    transition: left .18s ease, top .18s ease;
+    /* the cursor can approach, but never land */
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .letter { display: none; text-align: left; }
+  .letter.show { display: block; animation: rise .8s ease both; }
+  .letter {
+    position: relative;
+    padding: 56px 48px;
+    border: 1px solid var(--line);
+    background:
+      linear-gradient(var(--card), var(--card)) padding-box,
+      linear-gradient(135deg, #e8b4c4, var(--accent), #e8b4c4) border-box;
+    border: 2px solid transparent;
+    border-radius: 22px;
+  }
+  /* inner hairline frame, like fine stationery */
+  .letter::before {
+    content: "";
+    position: absolute;
+    inset: 14px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    pointer-events: none;
+  }
+  .letter::after {
+    content: "❦";
+    position: absolute;
+    left: 50%; bottom: 22px;
+    transform: translateX(-50%);
+    color: var(--accent);
+    font-size: 18px;
+    opacity: .8;
+  }
+  .corner {
+    position: absolute;
+    font-size: 20px;
+    opacity: .9;
+    pointer-events: none;
+  }
+  .corner.tl { top: 20px; left: 22px; }
+  .corner.tr { top: 20px; right: 22px; }
+  .corner.bl { bottom: 20px; left: 22px; }
+  .corner.br { bottom: 20px; right: 22px; }
+  .letter p { white-space: pre-wrap; margin: 0 0 18px; }
+  .dear {
+    font-family: "Segoe Script", "Brush Script MT", cursive;
+    font-size: 26px;
+    color: var(--accent);
+    margin: 0 0 20px;
+  }
+  #body { font-size: 17px; line-height: 1.9; }
+  #body::first-letter { font-size: 150%; color: var(--accent); }
+  .sig {
+    font-family: "Segoe Script", "Brush Script MT", cursive;
+    font-size: 22px;
+    color: var(--accent);
+    text-align: right;
+    margin-top: 28px;
+    margin-bottom: 26px;
+  }
+  .from {
+    color: var(--muted);
+    font-size: 12px;
+    margin-bottom: 20px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    text-align: center;
+  }
+  .rule {
+    width: 90px; height: 1px;
+    margin: 0 auto 26px;
+    border: 0;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+</style>
+</head>
+<body>
+  <div id="petals" aria-hidden="true"></div>
+
+  <main class="stage">
+    <section class="envelope" id="prompt">
+      <div class="seal">💌</div>
+      <h1>Joyanta Sarker Joy has sent you a message.</h1>
+      <p class="sub">Want to read?</p>
+      <div class="row">
+        <button id="yes">Yes, open it</button>
+        <button id="no" class="ghost">Not now</button>
+      </div>
+    </section>
+
+    <section class="envelope letter" id="letter">
+      <span class="corner tl">🌹</span>
+      <span class="corner tr">🌹</span>
+      <span class="corner bl">💕</span>
+      <span class="corner br">💕</span>
+      <p class="from" id="from"></p>
+      <hr class="rule" />
+      <p class="dear" id="dear"></p>
+      <p id="body"></p>
+      <p class="sig" id="sig"></p>
+    </section>
+  </main>
+
+<script>
+  // ---- romantic background ----
+  const EMOJI = ['🌸', '🌹', '💐', '🌷', '❤️', '💕', '💖', '💗', '💘', '💞', '😘', '💋', '🥰'];
+  const field = document.getElementById('petals');
+
+  function petal(seeded) {
+    const el = document.createElement('span');
+    el.className = 'petal';
+    el.textContent = EMOJI[(Math.random() * EMOJI.length) | 0];
+    const dur = 9 + Math.random() * 12;
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.fontSize = 14 + Math.random() * 26 + 'px';
+    el.style.setProperty('--drift', (Math.random() * 200 - 100) + 'px');
+    el.style.setProperty('--spin', (Math.random() * 720 - 360) + 'deg');
+    el.style.animationDuration = dur + 's';
+    // Stagger the first batch so the screen isn't empty on load.
+    el.style.animationDelay = (seeded ? -Math.random() * dur : 0) + 's';
+    el.addEventListener('animationiteration', () => el.remove());
+    setTimeout(() => el.remove(), (dur + 2) * 1000);
+    field.appendChild(el);
+  }
+
+  for (let i = 0; i < 28; i++) petal(true);
+  setInterval(() => { if (field.childElementCount < 45) petal(false); }, 700);
+
+  // A burst of hearts wherever you click.
+  addEventListener('click', (e) => {
+    for (let i = 0; i < 6; i++) {
+      const el = document.createElement('span');
+      el.className = 'petal';
+      el.textContent = EMOJI[(Math.random() * EMOJI.length) | 0];
+      el.style.cssText =
+        `top:${e.clientY}px;left:${e.clientX}px;font-size:${16 + Math.random() * 16}px;` +
+        `animation:none;transition:transform 1s ease-out, opacity 1s ease-out;`;
+      field.appendChild(el);
+      requestAnimationFrame(() => {
+        el.style.transform =
+          `translate(${Math.random() * 160 - 80}px, ${-40 - Math.random() * 120}px) rotate(${Math.random() * 180 - 90}deg)`;
+        el.style.opacity = '0';
+      });
+      setTimeout(() => el.remove(), 1100);
+    }
+  });
+
+  const prompt = document.getElementById('prompt');
+  const letter = document.getElementById('letter');
+  const no = document.getElementById('no');
+
+  document.getElementById('yes').addEventListener('click', async () => {
+    const res = await fetch('/message');
+    const data = await res.json();
+    document.getElementById('from').textContent = 'A letter from ' + data.from;
+    document.getElementById('dear').textContent = data.dear;
+    document.getElementById('body').textContent = data.body;
+    document.getElementById('sig').textContent = data.signature;
+    prompt.style.display = 'none';
+    no.remove();
+    letter.classList.add('show');
+  });
+
+  // "Not now" is never actually an option: it runs from the cursor.
+  const SAFE = 120;   // how close the pointer may get, in px
+  const MARGIN = 16;  // keep the button on screen
+
+  function place(x, y) {
+    const w = no.offsetWidth, h = no.offsetHeight;
+    no.style.left = Math.min(Math.max(x, MARGIN), innerWidth - w - MARGIN) + 'px';
+    no.style.top = Math.min(Math.max(y, MARGIN), innerHeight - h - MARGIN) + 'px';
+  }
+
+  function flee(px, py) {
+    const w = no.offsetWidth, h = no.offsetHeight;
+    for (let i = 0; i < 40; i++) {
+      const x = MARGIN + Math.random() * (innerWidth - w - MARGIN * 2);
+      const y = MARGIN + Math.random() * (innerHeight - h - MARGIN * 2);
+      if (Math.hypot(px - (x + w / 2), py - (y + h / 2)) > SAFE * 1.8) return place(x, y);
+    }
+    place(innerWidth - w - MARGIN, innerHeight - h - MARGIN);
+  }
+
+  function pointerNear(px, py) {
+    const r = no.getBoundingClientRect();
+    const dx = Math.max(r.left - px, 0, px - r.right);
+    const dy = Math.max(r.top - py, 0, py - r.bottom);
+    return Math.hypot(dx, dy) < SAFE;
+  }
+
+  addEventListener('pointermove', (e) => {
+    if (pointerNear(e.clientX, e.clientY)) flee(e.clientX, e.clientY);
+  }, { passive: true });
+
+  // Touch, keyboard and programmatic routes are closed off too.
+  no.addEventListener('pointerdown', (e) => { e.preventDefault(); flee(e.clientX, e.clientY); });
+  no.addEventListener('click', (e) => { e.preventDefault(); flee(e.clientX || 0, e.clientY || 0); });
+  no.tabIndex = -1;
+
+  // Start it somewhere below the card, then keep it inside the viewport on resize.
+  const start = () => {
+    const r = prompt.getBoundingClientRect();
+    place(r.left + r.width / 2 - no.offsetWidth / 2, r.bottom + 24);
+  };
+  start();
+  addEventListener('resize', () => place(parseFloat(no.style.left), parseFloat(no.style.top)));
+</script>
+</body>
+</html>
